@@ -1,4 +1,9 @@
 package me.zy.spring.framework.beans.factory.config;
+import lombok.Data;
 
-public interface ZYBeanDefinition {
+@Data
+public class ZYBeanDefinition {
+    private String beanName;
+    private boolean lazyInit = false;
+    private String factoryBeanName;
 }
