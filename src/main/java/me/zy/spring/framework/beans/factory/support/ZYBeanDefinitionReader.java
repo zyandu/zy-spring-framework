@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -56,20 +57,62 @@ public class ZYBeanDefinitionReader {
 
     }
 
+    /**
+     * 把配置文件扫描到的所有的配置信息转换为ZYBeanDefinition
+     * 方便后续IOC容器使用
+     * @param locations
+     * @return
+     */
     public List<ZYBeanDefinition> loadBeanDefinitions(String... locations){
+        List<ZYBeanDefinition> zyBeanDefinitions = new ArrayList<ZYBeanDefinition>();
         for(String className:registerClasses){
-            try {
-                Class<?> clazz = Class.forName(className);
-                //如果是接口，用它的实现类作为ClassName
-                if(clazz.isInterface()){
-
-                }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+            ZYBeanDefinition definition = doCreateBeanDefinition(className);
+            if(null!=definition){
+                zyBeanDefinitions.add(definition);
+            }else {
+                continue;
             }
 
         }
+        return zyBeanDefinitions;
     }
+
+    private ZYBeanDefinition doCreateBeanDefinition(String className){
+        try {
+            Class<?> clazz = Class.forName(className);
+            //如果是接口，用它的实现类作为ClassName
+            if(clazz.isInterface()){
+                return null;
+            }else{
+                ZYBeanDefinition definition = new ZYBeanDefinition();
+                definition.setBeanName(className);
+                definition.setFactoryBeanName(clazz.getSimpleName());
+                return definition;
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 字符串首字母转为小写字母
+     * @param targetString
+     * @return
+     */
+    private String toFirstCharLowerCase(String targetString){
+        if(targetString!= null && targetString!=""){
+            char[] charArray = targetString.toCharArray();
+            //大小写字母ASCII码值相差32
+            //大写字母ASCII要小于小写字母
+            //对字符串字母进行大小写转换，其实就是对字母的ASCII值进行计算
+            charArray[0] +=32;
+            return String.valueOf(charArray);
+        }else{
+            return null;
+        }
+    }
+
 
     public Properties getConfig() {
         return config;

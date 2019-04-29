@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ZYDefaultListableBeanFactory extends ZYAbstractApplicationContext implements ZYBeanFactory {
     /** Map of bean definition objects, keyed by bean name */
     //存储注册信息的BeanDefinition
-    private final Map<String, ZYBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, ZYBeanDefinition>();
+    protected final Map<String, ZYBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, ZYBeanDefinition>();
 
     @Override
     protected void refresh() {
