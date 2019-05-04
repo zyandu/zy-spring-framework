@@ -24,4 +24,9 @@ public class ZYDefaultListableBeanFactory extends ZYAbstractApplicationContext i
     public Object getBean(String beanName) {
         return null;
     }
+
+    @Override
+    public Object getBean(Class<?> beanClass) throws Exception {
+        return null;
+    }
 }

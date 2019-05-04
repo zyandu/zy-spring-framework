@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class ZYBeanDefinitionReader {
     private Properties config = new Properties();
-    private List<String> registerClasses;
+    private List<String> registerClasses = new ArrayList<>();
     private final String SCAN_BASEPACKAGE = "scan.basepackage";
 
     public ZYBeanDefinitionReader(String... locations){
@@ -38,8 +38,9 @@ public class ZYBeanDefinitionReader {
 
     //根据配置扫描相应的包路径下的类
     private void doScanner(String basePackage) {
-        URL url = this.getClass().getClassLoader().
-                getResource("/"+basePackage.replaceAll("\\.","/"));
+        //URL url = this.getClass().getClassLoader().
+        //        getResource("/"+basePackage.replaceAll("\\.","/"));
+        URL url = this.getClass().getResource("/"+basePackage.replaceAll("\\.","/"));
         File classpath = new File(url.getFile());
         for (File file:classpath.listFiles()){
             if(file.isDirectory()){
@@ -116,5 +117,11 @@ public class ZYBeanDefinitionReader {
 
     public Properties getConfig() {
         return config;
+    }
+
+    public static void main(String[] args) {
+        ZYBeanDefinition bd = new ZYBeanDefinition();
+        System.out.println(bd.getClass().getSimpleName());
+        System.out.println(bd.getClass().getName());
     }
 }

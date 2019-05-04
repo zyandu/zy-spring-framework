@@ -7,5 +7,10 @@ public interface ZYBeanFactory {
      * @param beanName
      * @return
      */
-    Object getBean(String beanName);
+    Object getBean(String beanName) throws Exception;
+
+    /**
+     * 通过类名获取实例bean
+    * */
+    Object getBean(Class<?> beanClass) throws Exception;
 }
