@@ -43,6 +43,13 @@ public class ZYApplicationContext extends ZYDefaultListableBeanFactory implement
 
     @Override
     public Object getBean(String beanName) {
+        ZYBeanDefinition zyBeanDefinition =this.beanDefinitionMap.get(beanName);
+        //Object instance = null;
+
+        //这个逻辑还不严谨，自己可以去参考Spring源码
+        //工厂模式 + 策略模式
+
+
         //模拟spring的doCreateBean方法
         //分两步
         //1.初始化bean
@@ -132,7 +139,12 @@ public class ZYApplicationContext extends ZYDefaultListableBeanFactory implement
         reader = new ZYBeanDefinitionReader(this.configLocations);
 
         //2.加载：加载配置文件，扫描配置的类，封装到BeanDefinition
-        List<ZYBeanDefinition> definitionList = reader.loadBeanDefinitions(configLocations);
+        List<ZYBeanDefinition> definitionList = null;
+        try {
+            definitionList = reader.loadBeanDefinitions(configLocations);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         //3.注册：把配置相关信息放到容器里面(伪IOC容器)
         doRegistereBeanDefinition(definitionList);

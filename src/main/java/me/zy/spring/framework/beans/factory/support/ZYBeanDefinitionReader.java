@@ -12,13 +12,13 @@ import java.util.Properties;
 
 public class ZYBeanDefinitionReader {
     private Properties config = new Properties();
-    private List<String> registerClasses = new ArrayList<>();
+    private List<String> registerBeanClasses = new ArrayList<>();
     private final String SCAN_BASEPACKAGE = "scan.basepackage";
 
     public ZYBeanDefinitionReader(String... locations){
         //通过url定位找到所对应的文件，转换为文件流
         InputStream is = this.getClass().getClassLoader().
-                getResourceAsStream(locations[0].replaceAll("/+","/"));
+                getResourceAsStream(locations[0].replace("classpath:",""));
         try {
             config.load(is);
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class ZYBeanDefinitionReader {
                     continue;
                 }else{
                     String className=(basePackage+"."+file.getName().replace(".class",""));
-                    registerClasses.add(className);
+                    registerBeanClasses.add(className);
                 }
             }
 
@@ -61,39 +61,39 @@ public class ZYBeanDefinitionReader {
     /**
      * 把配置文件扫描到的所有的配置信息转换为ZYBeanDefinition
      * 方便后续IOC容器使用
-     * @param locations
      * @return
      */
-    public List<ZYBeanDefinition> loadBeanDefinitions(String... locations){
+    public List<ZYBeanDefinition> loadBeanDefinitions(String... configurations) throws ClassNotFoundException {
         List<ZYBeanDefinition> zyBeanDefinitions = new ArrayList<ZYBeanDefinition>();
-        for(String className:registerClasses){
-            ZYBeanDefinition definition = doCreateBeanDefinition(className);
-            if(null!=definition){
-                zyBeanDefinitions.add(definition);
-            }else {
+        for(String beanClassName: registerBeanClasses){
+            Class<?> beanClass = Class.forName(beanClassName);
+            if(beanClass.isInterface())
                 continue;
+
+            //beanName有三种情况:
+            //1、默认是类名首字母小写
+            //2、自定义名字
+            //3、接口注入
+            zyBeanDefinitions.add(doCreateBeanDefinition(toFirstCharLowerCase(beanClass.getSimpleName()),
+                beanClass.getName()));
+
+            Class<?>[] interfaces = beanClass.getInterfaces();
+            for(Class<?> i:interfaces){
+                //如果是多个实现类，只能覆盖
+                //为什么？因为Spring没那么智能
+                //这个时候，可以自定义名字
+                zyBeanDefinitions.add(doCreateBeanDefinition(i.getName(),beanClass.getName()));
             }
 
         }
         return zyBeanDefinitions;
     }
 
-    private ZYBeanDefinition doCreateBeanDefinition(String className){
-        try {
-            Class<?> clazz = Class.forName(className);
-            //如果是接口，用它的实现类作为ClassName
-            if(clazz.isInterface()){
-                return null;
-            }else{
-                ZYBeanDefinition definition = new ZYBeanDefinition();
-                definition.setBeanName(className);
-                definition.setFactoryBeanName(clazz.getSimpleName());
-                return definition;
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private ZYBeanDefinition doCreateBeanDefinition(String factoryBeanName,String beanClassName){
+        ZYBeanDefinition definition = new ZYBeanDefinition();
+        definition.setBeanName(beanClassName);
+        definition.setFactoryBeanName(factoryBeanName);
+        return definition;
     }
 
     /**
