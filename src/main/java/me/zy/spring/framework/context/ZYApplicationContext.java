@@ -2,14 +2,16 @@ package me.zy.spring.framework.context;
 
 import me.zy.spring.framework.beans.ZYBeanWrapper;
 import me.zy.spring.framework.beans.factory.ZYBeanFactory;
-import me.zy.spring.framework.beans.factory.annotation.ZYAutowired;
+import me.zy.spring.framework.annotation.ZYAutowired;
 import me.zy.spring.framework.beans.factory.config.ZYBeanDefinition;
+import me.zy.spring.framework.beans.factory.config.ZYBeanPostProcessor;
 import me.zy.spring.framework.beans.factory.support.ZYBeanDefinitionReader;
 import me.zy.spring.framework.beans.factory.support.ZYDefaultListableBeanFactory;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,19 +46,23 @@ public class ZYApplicationContext extends ZYDefaultListableBeanFactory implement
     @Override
     public Object getBean(String beanName) {
         ZYBeanDefinition zyBeanDefinition =this.beanDefinitionMap.get(beanName);
-        //Object instance = null;
+        Object instance = null;
 
         //这个逻辑还不严谨，自己可以去参考Spring源码
         //工厂模式 + 策略模式
-
+        ZYBeanPostProcessor postProcessor = new ZYBeanPostProcessor();
+        postProcessor.postProcessBeforeInitialization(instance,beanName);
 
         //模拟spring的doCreateBean方法
         //分两步
         //1.初始化bean
-        ZYBeanWrapper zyBeanWrapper = instantiateBean(beanName,this.beanDefinitionMap.get(beanName));
+        instance = instantiateBean(beanName,this.beanDefinitionMap.get(beanName));
+        ZYBeanWrapper zyBeanWrapper = new ZYBeanWrapper(instance);
 
         //2.拿到beanWrapper之后，保存到IOC容器中
         this.factoryBeanInstanceCache.put(beanName,zyBeanWrapper);
+
+        postProcessor.postProcessAfterInitialization(instance,beanName);
 
         //3.注入
         populateBean(beanName,new ZYBeanDefinition(),zyBeanWrapper);
@@ -171,5 +177,13 @@ public class ZYApplicationContext extends ZYDefaultListableBeanFactory implement
             super.beanDefinitionMap.put(definitionList.get(i).getFactoryBeanName(),definitionList.get(i));
         }
 
+    }
+
+    public String[] getBeanDefinitionNames() {
+        return this.beanDefinitionMap.keySet().toArray(new  String[this.beanDefinitionMap.size()]);
+    }
+
+    public Properties getConfig(){
+        return this.reader.getConfig();
     }
 }

@@ -27,5 +27,17 @@
     Welcome to ZY-Spring-Framework!
   </description>
 
-
+  <servlet>
+    <servlet-name>zymvc</servlet-name>
+    <servlet-class>me.zy.spring.framework.webmvc.ZYDispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:appliationContext.properties</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>zymvc</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
 </web-app>
